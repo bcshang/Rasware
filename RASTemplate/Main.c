@@ -14,11 +14,12 @@
  *			   F4:Red
  *
  * Pin Specifications:
- *		Right Servo:B1
- *		Left Servo:	B2
+ *		Right Servo:B0
+ *		Left Servo:	B1
  *
- *		Right IR Sensor:
- *		Left IR Sensor: 
+ *		Right IR Sensor: D0
+ *      Middle IR Sensor: D1
+ *		Left IR Sensor: D2
  */
 
 
@@ -49,16 +50,16 @@ void initServo(void) {
  //Movement functions
  static float speed = .3;
  void moveForward(void) {
- 	SetServo(servo_L, 1-speed);
     SetServo(servo_R, speed);
+ 	SetServo(servo_L, 1-speed);
  }
  void moveBackward(void) {
- 	SetServo(servo_L, speed);
  	SetServo(servo_R, 1-speed);
+ 	SetServo(servo_L, speed);
  }
  void moveStop(void) {
- 	SetServo(servo_L, .5);
  	SetServo(servo_R, .5);
+ 	SetServo(servo_L, .5);
  }
 
  //TODO requires calibration
@@ -89,8 +90,9 @@ void initIRSensor(void) {
     IR_initd = true;
 
     // initialize 4 pins to be used for ADC input
-    adc[0] = InitializeADC(PIN_D0);
+    adc[0] = InitializeADC(PIN_D2);
     adc[1] = InitializeADC(PIN_D1);
+    adc[2] = InitializeADC(PIN_D0);
 }
 /*~~~~~~~~~~~~IR Sensor Code End~~~~~~~~~~~~~~~*/
 
@@ -101,11 +103,28 @@ int main(void) {
     CallEvery(blink, 0, 1);
 
     //Initialize servos and IR sensors
-    initServo();
     initIRSensor();
 
     while (1) {
-        Printf("Speed is %1.3f\n", speed);
-        Wait(5);
+        Wait(1);
+        //Left sense
+        if(ADCRead(adc[0])>.6) {
+            Printf("Reading Left\n");
+            //moveStop();
+        }
+        //Middle sense
+        else if(ADCRead(adc[1])>.6) {
+            Printf("Reading Middle\n");
+            //moveStop();
+        }
+        //Right sense
+        else if(ADCRead(adc[2])>.6) {
+            Printf("Reading Right\n");
+            //moveStop();
+        }
+        else {
+            Printf("Reading Nothing\n");
+            //moveForward();
+        }
     }
 }
